@@ -1,0 +1,500 @@
+---
+title: "Stat 151a final project"
+author: "Martin Garcia-Angel"
+date: "2023-12-03"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(tidyr)
+library(magrittr)
+library(ggplot2)
+library(faux)
+```
+
+```{r}
+hour =read.csv("C:\\Users\\Marti\\Downloads\\hour.csv")
+head(hour)
+```
+
+```{r}
+day =read.csv("C:\\Users\\Marti\\Downloads\\day.csv")
+head(day)
+```
+
+```{r}
+nrow(hour)
+nrow(day)
+```
+
+### Line plot showing bike usage per day
+
+```{r}
+# Create the line plot
+ggplot(day, aes(x = instant, y = cnt)) +
+  geom_line() +
+  labs(x = "Index", y = "Count bike usage per Day", title = "Total Bike usage over Time") +
+  theme_minimal()
+```
+
+### Checking total count of bikes per season
+
+```{r}
+ggplot(day, aes(x = season, y = cnt)) + geom_bar(stat = 'identity')+ scale_y_continuous(labels = scales::comma)
+```
+
+## Checking total number of bikes per every month of the year
+
+```{r}
+day$mnth <- as.factor(day$mnth)
+
+ggplot(day, aes(x = factor(mnth), y = cnt)) + 
+  geom_bar(stat = 'identity') +
+  scale_y_continuous(labels = scales::comma) +
+  labs(x = "Month", y = "Count")
+```
+
+### box plot of Daily usage during Holiday vs Non-Holiday
+
+```{r}
+box_plot <- ggplot(day, aes(x = factor(holiday), y = cnt, fill = factor(holiday))) +
+  geom_boxplot() +
+  labs(x = "Holiday", y = "Count", title = "Daily Usage for Holiday vs Non-Holiday") +
+  scale_fill_manual(values = c("pink", "skyblue"))  # Specify colors for boxes
+box_plot
+```
+
+### box plot of Hourly usage during Holiday vs Non-Holiday
+
+```{r}
+box_plot <- ggplot(hour, aes(x = factor(holiday), y = cnt, fill = factor(holiday))) +
+  geom_boxplot() +
+  labs(x = "Holiday", y = "Count", title = "Hour Usage for Holiday vs Non-Holiday") +
+  scale_fill_manual(values = c("pink", "skyblue"))  # Specify colors for boxes
+box_plot
+```
+
+### Bar plot of average ridership for holiday vs non-holiday
+
+```{r}
+avg_counts <- day %>%
+  group_by(holiday) %>%
+  summarise(avg_count = mean(cnt, na.rm = TRUE))
+
+bar_chart <- ggplot(avg_counts, aes(x = factor(holiday), y = avg_count, fill = factor(holiday))) +
+  geom_bar(stat = 'identity') +
+  labs(x = "Holiday", y = "Average Count", title = "Average Daily Count of Bike Usage for Holiday vs Non-Holiday") +
+  scale_fill_manual(values = c("pink", "skyblue"))
+
+bar_chart
+```
+
+```{r}
+# Calculate average counts per hour
+avg_counts <- day %>%
+  group_by(season) %>%
+  summarise(avg_count = mean(cnt, na.rm = TRUE))
+
+# Create the line plot
+ggplot(avg_counts, aes(x = season, y = avg_count)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "Season", y = "Average Count per day in the Season", title = "Average Count of Everyday Bike Usage per season") +
+  theme_minimal()
+```
+
+
+### Bar plot of average ridership for per day of the week
+
+```{r}
+avg_counts <- day %>%
+  group_by(weekday) %>%
+  summarise(avg_count = mean(cnt, na.rm = TRUE))
+
+# Reorder the levels of 'weekday' based on average count (descending order)
+avg_counts <- avg_counts %>%
+  mutate(weekday = reorder(factor(weekday), -avg_count))
+
+# Create the bar chart
+ggplot(avg_counts, aes(x = weekday, y = avg_count, fill = factor(weekday))) +
+  geom_bar(stat = 'identity') +
+  labs(x = "Day of the Week", y = "Average Count", title = "Average Count Comparison: Day of the Week") 
+
+```
+
+### Box plot of Ridership for per day of the week
+
+```{r}
+ggplot(day, aes(x = factor(weekday), y = cnt, fill = factor(weekday))) +
+  geom_boxplot() +
+  labs(x = "Weekday", y = "Count", title = "Count Distribution: Day of the Week")
+```
+
+### Box plot of Ridership for per Workingday
+
+```{r}
+ggplot(day, aes(x = factor(workingday), y = cnt, fill = factor(workingday))) +
+  geom_boxplot() +
+  labs(x = "Workingday", y = "Count", title = "Count Distribution: Working Day?")
+```
+
+## Total number of riders during 2011 and 2012
+
+```{r}
+ggplot(day, aes(x = factor(yr), y = cnt, fill = factor(yr))) +
+  geom_bar(stat = 'identity') +
+  labs(x = "Year", y = "Count", title = "Count Distribution: Year") +
+  scale_fill_manual(values = c("pink", "skyblue"))  # Specify colors for boxes
+```
+
+### Registered Riders vs Total count
+
+```{r}
+ggplot(day, aes( x = registered, y = cnt)) + geom_point() + labs(x = 'Registered Riders', y = 'Total Count Riders', title = 'Registered Riders vs Total Count') 
+
+```
+
+### Pairs plot of all numerical variables
+
+```{r}
+day_data_2 = day[, c('cnt','registered', 'casual', 'temp', 'hum', 'windspeed')]
+pairs(day_data_2)
+```
+
+### Average bike usage per hour of the day
+
+```{r}
+# Calculate average counts per hour
+avg_counts <- hour %>%
+  group_by(hr) %>%
+  summarise(avg_count = mean(cnt, na.rm = TRUE))
+
+# Create the line plot
+ggplot(avg_counts, aes(x = hr, y = avg_count)) +
+  geom_point() +
+  geom_line() +
+  labs(x = "Hour of the Day", y = "Average Count of Bike Usage", title = "Average Count of Bike Usage per Hour") +
+  theme_minimal()
+```
+
+### Median bike usage per month of the Year
+
+```{r}
+# Calculate average counts per hour
+median_count <- hour %>%
+  group_by(mnth) %>%
+  summarise(avg_count = median(cnt, na.rm = TRUE))
+
+# Create the line plot
+ggplot(median_count, aes(x = mnth, y = avg_count)) +
+  geom_point() +
+  geom_line() +
+  scale_x_continuous(breaks = 1:12, labels = 1:12) +
+  labs(x = "Month of the Year", y = "Median Count of Bike Usage", title = "Median Count of Bike Usage for Each month of the Year") +
+  theme_minimal()
+```
+
+## ONE HOT ENCODING
+
+```{r}
+
+# Create binary columns for each season
+data <- hour
+
+# Create binary columns for each season
+data <- data %>%
+  mutate(
+    Season1 = ifelse(season == 1, 1, 0),
+    Season2 = ifelse(season == 2, 1, 0),
+    Season3 = ifelse(season == 3, 1, 0),
+    Season4 = ifelse(season == 4, 1, 0)
+  )
+
+# Create binary columns for each season
+data <- data %>%
+  mutate(
+    Weather1 = ifelse(weathersit == 1, 1, 0),
+    Weather2 = ifelse(weathersit == 2, 1, 0),
+    Weather3 = ifelse(weathersit == 3, 1, 0),
+    Weather4 = ifelse(weathersit == 4, 1, 0)
+  )
+
+data <- data %>%
+  mutate(
+    Weekday0 = ifelse(weekday == 0, 1, 0),
+    Weekday1 = ifelse(weekday == 1, 1, 0),
+    Weekday2 = ifelse(weekday == 2, 1, 0),
+    Weekday3 = ifelse(weekday == 3, 1, 0),
+    Weekday4 = ifelse(weekday == 4, 1, 0),
+    Weekday5 = ifelse(weekday == 5, 1, 0),
+    Weekday6 = ifelse(weekday == 6, 1, 0)
+  )
+data <- data %>%
+  mutate(
+    hr0 = ifelse(hr == 0, 1, 0),
+    hr1 = ifelse(hr == 1, 1, 0),
+    hr2 = ifelse(hr == 2, 1, 0),
+    hr3 = ifelse(hr == 3, 1, 0),
+    hr4 = ifelse(hr == 4, 1, 0),
+    hr5 = ifelse(hr == 5, 1, 0),
+    hr6 = ifelse(hr == 6, 1, 0),
+    hr7 = ifelse(hr == 7, 1, 0),
+    hr8 = ifelse(hr == 8, 1, 0),
+    hr9 = ifelse(hr == 9, 1, 0),
+    hr10 = ifelse(hr == 10, 1, 0),
+    hr11= ifelse(hr == 11, 1, 0),
+    hr12 = ifelse(hr == 12, 1, 0),
+    hr13 = ifelse(hr == 13, 1, 0),
+    hr14 = ifelse(hr == 14, 1, 0),
+    hr15 = ifelse(hr == 15, 1, 0),
+    hr16 = ifelse(hr == 16, 1, 0),
+    hr17 = ifelse(hr == 17, 1, 0),
+    hr18 = ifelse(hr == 18, 1, 0),
+    hr19 = ifelse(hr == 19, 1, 0),
+    hr20 = ifelse(hr == 20, 1, 0),
+    hr21 = ifelse(hr == 21, 1, 0),
+    hr22 = ifelse(hr == 22, 1, 0),
+    hr23 = ifelse(hr == 23, 1, 0)
+  )
+data <- data %>%
+  mutate(
+    month1 = ifelse(mnth == 1, 1, 0),
+    month2 = ifelse(mnth == 2, 1, 0),
+    month3 = ifelse(mnth == 3, 1, 0),
+    month4 = ifelse(mnth == 4, 1, 0),
+    month5 = ifelse(mnth == 5, 1, 0),
+    month6 = ifelse(mnth == 6, 1, 0),
+    month7 = ifelse(mnth == 7, 1, 0),
+    month8 = ifelse(mnth == 8, 1, 0),
+    month9 = ifelse(mnth == 9, 1, 0),
+    month10 = ifelse(mnth == 10, 1, 0),
+    month11 = ifelse(mnth == 11, 1, 0),
+    month12 = ifelse(mnth == 12, 1, 0)
+  )
+```
+
+##OHE for DAY
+```{r}
+# Create binary columns for each season
+data1<- day
+
+# Create binary columns for each season
+data1 <- data1 %>%
+  mutate(
+    Season1 = ifelse(season == 1, 1, 0),
+    Season2 = ifelse(season == 2, 1, 0),
+    Season3 = ifelse(season == 3, 1, 0),
+    Season4 = ifelse(season == 4, 1, 0)
+  )
+
+# Create binary columns for each season
+data1 <- data1 %>%
+  mutate(
+    Weather1 = ifelse(weathersit == 1, 1, 0),
+    Weather2 = ifelse(weathersit == 2, 1, 0),
+    Weather3 = ifelse(weathersit == 3, 1, 0),
+    Weather4 = ifelse(weathersit == 4, 1, 0)
+  )
+
+data1 <- data1 %>%
+  mutate(
+    Weekday0 = ifelse(weekday == 0, 1, 0),
+    Weekday1 = ifelse(weekday == 1, 1, 0),
+    Weekday2 = ifelse(weekday == 2, 1, 0),
+    Weekday3 = ifelse(weekday == 3, 1, 0),
+    Weekday4 = ifelse(weekday == 4, 1, 0),
+    Weekday5 = ifelse(weekday == 5, 1, 0),
+    Weekday6 = ifelse(weekday == 6, 1, 0)
+  )
+
+data1 <- data1 %>%
+  mutate(
+    month1 = ifelse(mnth == 1, 1, 0),
+    month2 = ifelse(mnth == 2, 1, 0),
+    month3 = ifelse(mnth == 3, 1, 0),
+    month4 = ifelse(mnth == 4, 1, 0),
+    month5 = ifelse(mnth == 5, 1, 0),
+    month6 = ifelse(mnth == 6, 1, 0),
+    month7 = ifelse(mnth == 7, 1, 0),
+    month8 = ifelse(mnth == 8, 1, 0),
+    month9 = ifelse(mnth == 9, 1, 0),
+    month10 = ifelse(mnth == 10, 1, 0),
+    month11 = ifelse(mnth == 11, 1, 0),
+    month12 = ifelse(mnth == 12, 1, 0)
+  )
+```
+
+-Testing the best subset for our model on all categorical variables
+
+```{r}
+names(data)
+library(leaps)
+data$hrssn= data$season * data$workingday 
+data$weathersitwork= data$hr8 * data$weathersit 
+bhour <- regsubsets(cnt~registered+Season1+Season2+Season3+Season4+Weekday0+Weekday1+Weekday2+Weekday3+Weekday4+Weekday5+Weekday6+Weather1+Weather2+Weather3+Weather4
+                    +hr1+hr2+hr3+hr4+hr5+hr6+hr7+hr8+hr9+hr10+hr11+hr12+hr13+hr14+hr15+hr16+hr17+hr18+hr19+hr20+hr21+hr22+hr23+month1+month2
+                    +month3+month4+month5+month6+month7+month8+month9+month10+month11+month12+holiday+workingday+yr+temp+windspeed+atemp+hum+weathersitwork+hrssn, data,really.big=T)
+summary(bhour)
+summary(bhour)$adjr2
+which.max(summary(bhour)$adjr2)
+```
+
+
+
+```{r}
+day1 = subset(day, yr == 1)
+hour$hrssn= hour$season * hour$workingday 
+hour$hrmnth= hour$workingday * hour$weathersit 
+big_model = lm(cnt ~registered+ hrssn +hrmnth+temp +hum+workingday, data = hour)
+summary(big_model)
+plot(big_model)
+```
+```{r}
+library(caret)
+day_model = lm(cnt ~registered+ mnth +weathersit+temp +hum+workingday+season, data = day)
+predicted_values <- predict(day_model, newdata = day)
+RMSE(predicted_values, day$cnt)
+
+comparison_data <- data.frame(
+  Instant = day$instant,
+  Observed = day$cnt,
+  Predicted = predicted_values
+)
+filtered_data <- comparison_data %>% filter(row_number() %% 10 == 0)
+
+ggplot(filtered_data, aes(x = Instant, y = Observed)) +
+  geom_point() +
+  geom_line(aes(x = Instant, y = Predicted)) +
+  labs(x = "Index", y = "Count", title = "Observed vs. Predicted Count of Bike Usage") +
+  theme_minimal()
+```
+
+```{r}
+subset(comparison_data, Predicted < 0)
+comparison_data
+```
+
+##log t
+```{r}
+day_model_logged = lm(log(cnt) ~log(registered)+ mnth +weathersit + log(temp) +hum+workingday+season, data = day)
+
+plot(day_model_logged)
+predicted_values <- predict(day_model_logged, newdata = day)
+RMSE(predicted_values, log(day$cnt))
+
+comparison_data <- data.frame(
+  Instant = day$instant,
+  Observed = log(day$cnt),
+  Predicted = predicted_values
+)
+filtered_data <- comparison_data %>% filter(row_number() %% 10 == 0)
+
+ggplot(filtered_data, aes(x = Instant, y = Observed)) +
+  geom_point() +
+  geom_line(aes(x = Instant, y = Predicted)) +
+  labs(x = "Index", y = "Count", title = "Observed vs. Predicted Count of Bike Usage") +
+  theme_minimal()
+```
+
+```{r}
+selected_years <- c(1, 448, 185, 463, 668, 669, 693)
+
+subset(day, instant %in% selected_years , select = c('dteday', 'workingday','weathersit', 'temp', 'hum', 'windspeed','holiday', 'registered', 'cnt')  )
+smallest_cnt <- day[which.min(day$cnt), ]
+largest_cnt <- day[which.max(day$cnt), ]
+largest_cnt
+smallest_cnt
+```
+
+
+
+##standardize
+```{r}
+data1$tempstd = (day$temp - mean(day$temp))/sd(day$temp)
+data1$humstd = (day$hum - mean(day$hum))/sd(day$hum)
+data1$registeredstd = (day$registered - mean(day$registered))/sd(day$registered)
+data1$cntstd = (day$cnt - mean(day$cnt))/sd(day$cnt)
+
+day_model_standardized = lm(cntstd ~registeredstd+ mnth +weathersit + tempstd +humstd+workingday+ (workingday * tempstd), data = data1)
+summary(day_model_standardized)
+plot(day_model_standardized)
+predicted_values <- predict(day_model_standardized, newdata = data1)
+RMSE(predicted_values, data1$cntstd)
+
+comparison_data <- data.frame(
+  Instant = day$instant,
+  Observed = data1$cntstd,
+  Predicted = predicted_values
+)
+filtered_data <- comparison_data %>% filter(row_number() %% 10 == 0)
+
+ggplot(filtered_data, aes(x = Instant, y = Observed)) +
+  geom_point() +
+  geom_line(aes(x = Instant, y = Predicted)) +
+  labs(x = "Index", y = "Count", title = "Observed vs. Predicted Count of Bike Usage") +
+  theme_minimal()
+
+```
+
+
+```{r}
+names(day)
+bday <- regsubsets(cntstd~registeredstd+season+Weather1+Weather2+Weather3+Weather4+holiday+yr+month1+month2+month3+month4+month5+month6+month7+month8+month9+month10+month11+month12+Weekday1+Weekday2+Weekday3+Weekday4+Weekday5+Weekday6+Weekday0+tempstd+windspeed+humstd+workingday + Season1+Season2+Season3+Season4+(workingday * tempstd)+(humstd * tempstd), data1)
+summary(bday)
+summary(bday)$adjr2
+which.max(summary(bday)$adjr2)
+```
+
+
+
+```{r}
+
+big_std_model = lm(cntstd~registeredstd+holiday+month3+month10+Weekday5+tempstd+humstd+workingday +Season2+(workingday * tempstd)+(registeredstd * workingday)+
+                     (month3 * tempstd)+(holiday * registeredstd)+(holiday * tempstd)+(registeredstd * Season3), data1)
+
+summary(big_std_model)
+
+plot(big_std_model)
+predicted_values <- predict(big_std_model, newdata = data1)
+RMSE(predicted_values, data1$cntstd)
+
+comparison_data <- data.frame(
+  Instant = data1$instant,
+  Observed = data1$cntstd,
+  Predicted = predicted_values
+)
+filtered_data <- comparison_data %>% filter(row_number() %% 10 == 0)
+
+ggplot(filtered_data, aes(x = Instant, y = Observed)) +
+  geom_point() +
+  geom_line(aes(x = Instant, y = Predicted)) +
+  labs(x = "Index", y = "Count", title = "Observed vs. Predicted Count of Bike Usage") +
+  theme_minimal()
+```
+```{r}
+
+day_model_unstd =  lm(cnt~registered+month3+month10+Weekday5+hum+workingday +Season2+(workingday * temp)+(registered * workingday)+
+                     (month3 * temp)+(holiday * registered)+(holiday * temp)+(registered * Season3), data1)
+summary(day_model_unstd)
+plot(day_model_unstd)
+predicted_values <- predict(day_model_unstd, newdata = data1)
+RMSE(predicted_values, data1$cnt)
+
+comparison_data <- data.frame(
+  Instant = data1$instant,
+  Observed = data1$cnt,
+  Predicted = predicted_values
+)
+filtered_data <- comparison_data %>% filter(row_number() %% 10 == 0)
+
+ggplot(filtered_data, aes(x = Instant, y = Observed)) +
+  geom_point() +
+  geom_line(aes(x = Instant, y = Predicted)) +
+  labs(x = "Index", y = "Count", title = "Observed vs. Predicted Count of Bike Usage") +
+  theme_minimal()
+```
+
+
+
