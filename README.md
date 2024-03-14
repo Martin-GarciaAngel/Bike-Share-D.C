@@ -6,4 +6,4 @@ Most of this work involves creating multiple linear models in order to predict r
 
 In order to properly implement an appropriate linear model that would predict ridership well, techniques such as One Hot Encoding, forward selection, and variable combinations were used in order to create an accurate model for predicting ridership.
 
-Error metrics that were measured include $R^2$, $Mallows_{C_p}$, Adjusted $R^2$, and AIC(Akaike Information Criterion).
+Error metrics that were measured include $R^2$, MallowsCp, Adjusted $R^2$, and AIC(Akaike Information Criterion).
