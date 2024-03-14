@@ -2,7 +2,7 @@
 
 This Examines Bike share data in Washington D.C. The data was taken from UC Irvine's Machine Learning Repository https://archive.ics.uci.edu/dataset/275/bike+sharing+dataset. 
 
-Most of this work involves creating multiple linear models in order to predict ridership based off of features such as whether students are registered or not, the weather situation, the day of the week, etc.
+Most of this work involves creating multiple linear models in order to predict ridership based off of features such as weather situation, registration status, the day of the week, etc.
 
 In order to properly implement an appropriate linear model that would predict ridership well, techniques such as One Hot Encoding, forward selection, and variable combinations were used in order to create an accurate model for predicting ridership.
 
